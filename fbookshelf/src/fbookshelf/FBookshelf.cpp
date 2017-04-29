@@ -24,6 +24,10 @@
 #include "../database/booksdb/BooksDB.h"
 
 
+#include "../DriveApiDownloader/MultipleFilesDownloader.h"
+
+const std::string Fbookshelf::netOrLibMode = "netDrive";
+
 Fbookshelf &Fbookshelf::Instance() {
     return (Fbookshelf&)ZLApplication::Instance();
 }
@@ -102,20 +106,37 @@ void Fbookshelf::initWindow() {
     ZLApplication::initWindow();
     trackStylus(true);
 
-    BooksDBUtil::getBooks(BookshelfModel::Instance().getLibrary());
-    BooksMap::iterator it = BookshelfModel::Instance().getLibrary().begin();
-    BooksMap::iterator itEnd = BookshelfModel::Instance().getLibrary().end();
-    for(; it != itEnd; ++it)
+    if(netOrLibMode == "netDrive")
     {
-        if((*it).second->title() == "About FBReader") {
-            BookshelfModel::Instance().getLibrary().erase(it);
-        }
+        downloadAll();
+	BooksMap& netLib = BookshelfModel::Instance().getLibrary();
+
+	shared_ptr<Book> book = Book::createBook(
+                ZLFile("0B8Effbc_BcwyekZIakJHQl9Id0E.fb2.zip"), 0,
+                "English",
+                "English",
+                "DalRad"
+            );
+	netLib.insert(std::make_pair("",book));
     }
+    else
+    {
+
+        BooksDBUtil::getBooks(BookshelfModel::Instance().getLibrary());
+        BooksMap::iterator it = BookshelfModel::Instance().getLibrary().begin();
+        BooksMap::iterator itEnd = BookshelfModel::Instance().getLibrary().end();
+        for(; it != itEnd; ++it)
+        {
+            if((*it).second->title() == "About FBReader") {
+                BookshelfModel::Instance().getLibrary().erase(it);
+            }
+        }
             
 
-    shared_ptr<ZLView> view = this->currentView();
-    if(view->isInstanceOf(GridView::TYPE_ID)) {
-        static_cast<GridView&>(*view).setMode(GridView::WITHOUT_TAGS_MENU);
+        shared_ptr<ZLView> view = this->currentView();
+        if(view->isInstanceOf(GridView::TYPE_ID)) {
+            static_cast<GridView&>(*view).setMode(GridView::WITHOUT_TAGS_MENU);
+        }
     }
 
     refreshWindow();

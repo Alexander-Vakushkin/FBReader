@@ -77,6 +77,8 @@ private:
     shared_ptr<ZLView> myBookStackView;
     ViewMode myViewMode;
 
+    static const std::string netOrLibMode;
+
 };
 
 #endif /* __FBOOKSHELF_H__ */
